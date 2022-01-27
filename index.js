@@ -65,7 +65,7 @@ app.get('/api/search', async (req, res) => {
 
   var results = [];
 
-  // try {
+  try {
 
     const response = await axios.get('https://1.vecdn.pw/program.php');
 
@@ -168,11 +168,11 @@ app.get('/api/search', async (req, res) => {
         }
       }
     }
-  // } catch (err) {
-  //   return res.status(500).json({
-  //     error: "server/error"
-  //   })
-  // }
+  } catch (err) {
+    return res.status(500).json({
+      error: "server/error"
+    })
+  }
 
   res.json(results);
 
