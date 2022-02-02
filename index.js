@@ -14,13 +14,6 @@ app.set('view engine', 'ejs');
 app.use('/static', express.static(path.join(__dirname, 'public')));
 app.use(cors());
 
-const getGMTYear = (offset) => {
-  var d = new Date();
-  d = d - (d.getTimezoneOffset() * 60000 * (-1));
-  d = d + offset * 60000;
-  d = new Date(d);
-  return d.getFullYear();
-}
 const checkTitle = (title, query) => {
   if (!title) return false;
   const queryParts = query.split(' ');
@@ -70,8 +63,14 @@ app.get('/api/search', async (req, res) => {
     const response = await axios.get('https://1.vecdn.pw/program.php');
 
     data = JSDOM.fragment(response.data).querySelector('div.container').textContent;
-    var channels = data.split('-------------------------------------------------------------------------------------------------');
-    channels.splice(0,1);
+    var channels = data.split('\n\n\n\n');
+    channels.pop();
+
+    var headers = channels.shift().split('\n').splice(11,13);
+    var lastUpdate = headers[0]
+    var lastUpdateTimeZone = lastUpdate.split(' | ')[1].split(' ')[2];
+    var lastUpdateYear = lastUpdate.split(' | ')[1].split(' ')[5];
+    channels.unshift(headers[2]);
 
     var currentDateString;
     var channelResults = [];
@@ -79,20 +78,21 @@ app.get('/api/search', async (req, res) => {
     channels.every(channel => {
 
       var channelData = channel.trim().split('\n');
+      // remove empty lines in channelData
+      channelData = channelData.filter(line => line.length > 0);
 
       //Check if empty, if not, find the date
       if (channelData.length === 1) {
-        if (channelData[0].length === 0) return true;
-        else if (channelData[0].includes('📅')) {
+        if (channelData[0].includes('📅')) {
           var date = channelData[0].split('-')[1].trim();
-          currentDateString = date + " " + getGMTYear(120);
+          currentDateString = date + " " + lastUpdateYear;
           return true;
         }
       }
 
       //If not empty or a date, find the channel name and the programs
       var channelId = channelData[0].split('/')[3].split('.')[0].replace('ch', '');
-      channelData.splice(0,9);
+      channelData.splice(0,8);
 
       // Parse the programs
       const channelProg = channelData.map((prog) => {
@@ -100,7 +100,7 @@ app.get('/api/search', async (req, res) => {
             // Parse and Format time
             var timeString = prog.split(' ')[0];
 
-            var time = currentDateString + " " + timeString + " GMT+2";
+            var time = currentDateString + " " + timeString + " " + lastUpdateTimeZone;
             time = new Date(time).toISOString();
 
             // Parse program datas
