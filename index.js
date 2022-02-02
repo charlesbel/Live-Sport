@@ -24,6 +24,12 @@ const checkTitle = (title, query) => {
   return queryParts.length == successTermsCount;
 }
 
+var LOGOS = {
+  'Amazon Prime Video': 'https://m.media-amazon.com/images/G/01/digital/video/acquisition/amazon_video_light_on_dark.png',
+  'Canal + Sport': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png',
+  'Canal +': 'https://www.groupe-campus.com/wp-content/uploads/2019/07/canal-logo-png-transparent.png',
+};
+
 app.get('/', function (req, res, next) {
   res.render('pages/index')
 });
@@ -138,23 +144,18 @@ app.get('/api/search', async (req, res) => {
 
     });
 
-    var logos = {
-      'Amazon Prime Video': 'https://m.media-amazon.com/images/G/01/digital/video/acquisition/amazon_video_light_on_dark.png',
-      'Canal + Sport': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png',
-      'Canal +': 'https://www.groupe-campus.com/wp-content/uploads/2019/07/canal-logo-png-transparent.png',
-    };
     for (var i = 0; i < channelResults.length; i++) {
       var channel = channelResults[i];
       for (var j = 0; j < channel.channelProg.length; j++) {
         var prog = channel.channelProg[j];
         if (checkTitle(prog.title, query) || checkTitle(prog.channelName, query)) {
           var thumbnail;
-          if (!logos[prog.channelName]) {
+          if (!LOGOS[prog.channelName]) {
             var websiteDomain = (await axios.get('https://autocomplete.clearbit.com/v1/companies/suggest?query=' + prog.channelName)).data
             thumbnail = websiteDomain[0] ? websiteDomain[0].logo : null;
-            logos[prog.channelName] = thumbnail;
+            LOGOS[prog.channelName] = thumbnail;
           } else {
-            thumbnail = logos[prog.channelName];
+            thumbnail = LOGOS[prog.channelName];
           }
           results.push({
             id: channel.channelId,
