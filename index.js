@@ -152,7 +152,7 @@ app.get('/api/search', async (req, res) => {
           var thumbnail;
           if (!LOGOS[prog.channelName]) {
             var websiteDomain = (await axios.get('https://autocomplete.clearbit.com/v1/companies/suggest?query=' + prog.channelName)).data
-            thumbnail = websiteDomain[0] ? websiteDomain[0].logo : null;
+            thumbnail = websiteDomain[0] ? websiteDomain[0].logo : 'https://dino-chrome.com/static/images/dino.jpg';
             LOGOS[prog.channelName] = thumbnail;
           } else {
             thumbnail = LOGOS[prog.channelName];
