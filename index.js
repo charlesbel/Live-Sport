@@ -75,7 +75,7 @@ app.get('/api/search', async (req, res) => {
     var headers = channels.shift().split('\n').splice(11,13);
     var lastUpdate = headers[0]
     var lastUpdateTimeZone = lastUpdate.split(' | ')[1].split(' ')[2];
-    var lastUpdateYear = lastUpdate.split(' | ')[1].split(' ')[5];
+    var lastUpdateYear = lastUpdate.split(' | ')[0].split(' ')[4].split('.')[2];
     channels.unshift(headers[2]);
 
     var currentDateString;
