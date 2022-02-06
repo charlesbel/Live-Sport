@@ -166,7 +166,6 @@ app.get('/api/search', async (req, res) => {
         }
         parsed = parseChannelProg(channelData.slice(parsed.index+1), currentDateString, lastUpdateTimeZone);
         var channelProg = parsed.channelProg.filter(prog => prog !== null);
-        console.log(channelId, channelProg);
         elemInResults = channelResults.find(obj => obj.channelId === channelId)
         elemInResults ? elemInResults.channelProg = elemInResults.channelProg.concat(channelProg) : channelResults.push({channelId, channelProg});
         finishedParsing = !parsed.error;
