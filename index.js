@@ -30,7 +30,7 @@ var LOGOS = {
   'Canal +': 'https://www.groupe-campus.com/wp-content/uploads/2019/07/canal-logo-png-transparent.png',
 };
 
-const parseChannelProg = (channelData) => {
+const parseChannelProg = (channelData, currentDateString, lastUpdateTimeZone) => {
     var isNotRightlyParsed = false;
     var parseErrorIndex = 0;
     const channelProg = channelData.map((prog, index) => {
@@ -164,7 +164,7 @@ app.get('/api/search', async (req, res) => {
           channelId = channelData.slice(parsed.index+1)[0].split('\t').join('').trim().split('/')[3].split('.')[0].replace('ch', '');
           channelData.splice(parsed.index+1, parsed.index+5);
         }
-        parsed = parseChannelProg(channelData.slice(parsed.index+1));
+        parsed = parseChannelProg(channelData.slice(parsed.index+1), currentDateString, lastUpdateTimeZone);
         var channelProg = parsed.channelProg.filter(prog => prog !== null);
         console.log(channelId, channelProg);
         elemInResults = channelResults.find(obj => obj.channelId === channelId)
