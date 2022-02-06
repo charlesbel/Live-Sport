@@ -30,6 +30,62 @@ var LOGOS = {
   'Canal +': 'https://www.groupe-campus.com/wp-content/uploads/2019/07/canal-logo-png-transparent.png',
 };
 
+const parseChannelProg = (channelData) => {
+    var isNotRightlyParsed = false;
+    var parseErrorIndex = 0;
+    const channelProg = channelData.map((prog, index) => {
+
+        if (isNotRightlyParsed) return null;
+        if (prog == '\t   ') {
+          isNotRightlyParsed = true;
+          parseErrorIndex = index;
+          return null;
+        }
+
+        // Parse and Format time
+        var timeString = prog.split(' ')[0].replace(';',':');
+
+        var time = currentDateString + " " + timeString + " " + lastUpdateTimeZone;
+        time = new Date(time).toISOString();
+
+        // Parse program datas
+        var channelName, country, title;
+        if (prog.includes('(') || prog.includes(')')) {
+          var temp = prog.split('(');
+          channelName = temp.length === 3 ? temp[1].trim() : temp[1].replace(')','').trim();
+          country = temp.length === 3 ? temp[2].replace(')','').trim() : 'English';
+        }
+        else {
+          var temp = prog.split(' ')[1].split(':');
+          channelName = temp.length === 2 ? temp[0].trim() : null
+          country = 'English';
+        }
+
+        // Parse and Format title
+        title = prog.trim()
+        if (timeString) title = title.replace(timeString, '').trim();
+        if (channelName) title = title.replace(channelName, '').trim();
+        if (country) title = title.replace(country, '').trim();
+        title = title.split('(').join('').trim().split(')').join('').trim().split(':').join('').trim().replace('   ', ' ').trim();
+
+        return {
+          title,
+          time,
+          channelName,
+          country
+        }
+    });
+    if (isNotRightlyParsed) return {
+      'error': true,
+      'index': parseErrorIndex,
+      'channelProg': channelProg
+    }
+    else return {
+      'error': false,
+      'channelProg': channelProg
+    }
+  };
+
 app.get('/', function (req, res, next) {
   res.render('pages/index')
 });
@@ -85,7 +141,7 @@ app.get('/api/search', async (req, res) => {
 
       var channelData = channel.trim().split('\n');
       // remove empty lines in channelData
-      channelData = channelData.filter(line => line.length > 0);
+      channelData = channelData.filter(line => (line.length > 0 && line !== ' '));
 
       //Check if empty, if not, find the date
       if (channelData.length === 1) {
@@ -101,44 +157,20 @@ app.get('/api/search', async (req, res) => {
       channelData.splice(0,8);
 
       // Parse the programs
-      const channelProg = channelData.map((prog) => {
-
-            // Parse and Format time
-            var timeString = prog.split(' ')[0];
-
-            var time = currentDateString + " " + timeString + " " + lastUpdateTimeZone;
-            time = new Date(time).toISOString();
-
-            // Parse program datas
-            var channelName, country, title;
-            if (prog.includes('(') || prog.includes(')')) {
-              var temp = prog.split('(');
-              channelName = temp.length === 3 ? temp[1].trim() : temp[1].replace(')','').trim();
-              country = temp.length === 3 ? temp[2].replace(')','').trim() : 'English';
-            }
-            else {
-              var temp = prog.split(' ')[1].split(':');
-              channelName = temp.length === 2 ? temp[0].trim() : null
-              country = 'English';
-            }
-
-            // Parse and Format title
-            title = prog.trim()
-            if (timeString) title = title.replace(timeString, '').trim();
-            if (channelName) title = title.replace(channelName, '').trim();
-            if (country) title = title.replace(country, '').trim();
-            title = title.split('(').join('').trim().split(')').join('').trim().split(':').join('').trim().replace('   ', ' ').trim();
-
-            return {
-              title,
-              time,
-              channelName,
-              country
-            }
-      });
-
-      elemInResults = channelResults.find(obj => obj.channelId === channelId)
-      elemInResults ? elemInResults.channelProg = elemInResults.channelProg.concat(channelProg) : channelResults.push({channelId, channelProg});
+      var parsed = {index: -1};
+      var finishedParsing = false;
+      while (!finishedParsing) {
+        if (parsed.error) {
+          channelId = channelData.slice(parsed.index+1)[0].split('\t').join('').trim().split('/')[3].split('.')[0].replace('ch', '');
+          channelData.splice(parsed.index+1, parsed.index+5);
+        }
+        parsed = parseChannelProg(channelData.slice(parsed.index+1));
+        var channelProg = parsed.channelProg.filter(prog => prog !== null);
+        console.log(channelId, channelProg);
+        elemInResults = channelResults.find(obj => obj.channelId === channelId)
+        elemInResults ? elemInResults.channelProg = elemInResults.channelProg.concat(channelProg) : channelResults.push({channelId, channelProg});
+        finishedParsing = !parsed.error;
+      }
 
       return true;
 
