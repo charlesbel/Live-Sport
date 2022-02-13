@@ -31,60 +31,60 @@ var LOGOS = {
 };
 
 const parseChannelProg = (channelData, currentDateString, lastUpdateTimeZone) => {
-    var isNotRightlyParsed = false;
-    var parseErrorIndex = 0;
-    const channelProg = channelData.map((prog, index) => {
+  var isNotRightlyParsed = false;
+  var parseErrorIndex = 0;
+  const channelProg = channelData.map((prog, index) => {
 
-        if (isNotRightlyParsed) return null;
-        if (prog == '\t   ') {
-          isNotRightlyParsed = true;
-          parseErrorIndex = index;
-          return null;
-        }
+      if (isNotRightlyParsed) return null;
+      if (prog == '\t   ') {
+        isNotRightlyParsed = true;
+        parseErrorIndex = index;
+        return null;
+      }
 
-        // Parse and Format time
-        var timeString = prog.split(' ')[0].replace(';',':');
+      // Parse and Format time
+      var timeString = prog.split(' ')[0].replace(';',':');
 
-        var time = currentDateString + " " + timeString + " " + lastUpdateTimeZone;
-        time = new Date(time).toISOString();
+      var time = currentDateString + " " + timeString + " " + lastUpdateTimeZone;
+      time = new Date(time).toISOString();
 
-        // Parse program datas
-        var channelName, country, title;
-        if (prog.includes('(') || prog.includes(')')) {
-          var temp = prog.split('(');
-          channelName = temp.length === 3 ? temp[1].trim() : temp[1].replace(')','').trim();
-          country = temp.length === 3 ? temp[2].replace(')','').trim() : 'English';
-        }
-        else {
-          var temp = prog.split(' ')[1].split(':');
-          channelName = temp.length === 2 ? temp[0].trim() : null
-          country = 'English';
-        }
+      // Parse program datas
+      var channelName, country, title;
+      if (prog.includes('(') || prog.includes(')')) {
+        var temp = prog.split('(');
+        channelName = temp.length === 3 ? temp[1].trim() : temp[1].replace(')','').trim();
+        country = temp.length === 3 ? temp[2].replace(')','').trim() : 'English';
+      }
+      else {
+        var temp = prog.split(' ')[1].split(':');
+        channelName = temp.length === 2 ? temp[0].trim() : null
+        country = 'English';
+      }
 
-        // Parse and Format title
-        title = prog.trim()
-        if (timeString) title = title.replace(timeString, '').trim();
-        if (channelName) title = title.replace(channelName, '').trim();
-        if (country) title = title.replace(country, '').trim();
-        title = title.split('(').join('').trim().split(')').join('').trim().split(':').join('').trim().replace('   ', ' ').trim();
+      // Parse and Format title
+      title = prog.trim()
+      if (timeString) title = title.replace(timeString, '').trim();
+      if (channelName) title = title.replace(channelName, '').trim();
+      if (country) title = title.replace(country, '').trim();
+      title = title.split('(').join('').trim().split(')').join('').trim().split(':').join('').trim().replace('   ', ' ').trim();
 
-        return {
-          title,
-          time,
-          channelName,
-          country
-        }
-    });
-    if (isNotRightlyParsed) return {
-      'error': true,
-      'index': parseErrorIndex,
-      'channelProg': channelProg
-    }
-    else return {
-      'error': false,
-      'channelProg': channelProg
-    }
-  };
+      return {
+        title,
+        time,
+        channelName,
+        country
+      }
+  });
+  if (isNotRightlyParsed) return {
+    'error': true,
+    'index': parseErrorIndex,
+    'channelProg': channelProg
+  }
+  else return {
+    'error': false,
+    'channelProg': channelProg
+  }
+};
 
 app.get('/', function (req, res, next) {
   res.render('pages/index')
@@ -128,7 +128,7 @@ app.get('/api/search', async (req, res) => {
     var channels = data.split('\n\n\n\n');
     channels.pop();
 
-    var headers = channels.shift().split('\n').splice(11,13);
+    var headers = channels.shift().split('\n').splice(10,12);
     var lastUpdate = headers[0]
     var lastUpdateTimeZone = lastUpdate.split(' | ')[1].split(' ')[2];
     var lastUpdateYear = lastUpdate.split(' | ')[0].split(' ')[4].split('.')[2];
@@ -154,7 +154,7 @@ app.get('/api/search', async (req, res) => {
 
       //If not empty or a date, find the channel name and the programs
       var channelId = channelData[0].split('/')[3].split('.')[0].replace('ch', '');
-      channelData.splice(0,8);
+      channelData.splice(0,5);
 
       // Parse the programs
       var parsed = {index: -1};
