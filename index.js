@@ -3,7 +3,7 @@ const path = require('path');
 const cors = require('cors');
 const axios = require('axios');
 const dotenv = require('dotenv');
-const JSDOM = require("jsdom").JSDOM;
+const cheerio = require('cheerio');
 
 dotenv.config();
 
@@ -27,6 +27,7 @@ const checkTitle = (title, query) => {
 var LOGOS = {
   'Amazon Prime Video': 'https://m.media-amazon.com/images/G/01/digital/video/acquisition/amazon_video_light_on_dark.png',
   'Canal + Sport': 'https://upload.wikimedia.org/wikipedia/commons/1/1a/Canal%2B_Sport_2015.png',
+  'Canal + Decale': 'https://upload.wikimedia.org/wikipedia/fr/thumb/9/91/Canal%2B_D%C3%A9cal%C3%A9_2013.svg/1200px-Canal%2B_D%C3%A9cal%C3%A9_2013.svg.png',
   'Canal +': 'https://www.groupe-campus.com/wp-content/uploads/2019/07/canal-logo-png-transparent.png',
 };
 
